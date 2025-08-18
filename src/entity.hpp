@@ -130,7 +130,7 @@ private:
   int& _score;
 public:
   BrickHolder(Level* level,int& score);
-  Level* getLevel() const { return _level; } 
+  Level* getLevel() const;
 
   BrickHolder(Level* level, int& score, std::vector<BRICK_CONST::Param> bricksData);
   ~BrickHolder();
@@ -140,6 +140,7 @@ public:
   void addBrick(BRICK_CONST::Param brickData);
   void removeBrick(Brick* brick);
 };
+
 
 // -------------------------------------------------------------------------
 // Paddle
@@ -178,6 +179,7 @@ class Ball : public DynamiqueEntity, public CollisionCircle { // Represents the 
   void bounceHorizontal();
   void bounceVertical();
   void updateSpeed();
+  bool isAttached = true; // initial state
 
   // --- Bonus 'C' (capture) support ---
   Paddle* _attachedPaddle = nullptr;
@@ -185,7 +187,6 @@ class Ball : public DynamiqueEntity, public CollisionCircle { // Represents the 
   Ball(tpl position, float speed, float radius, ALLEGRO_COLOR color, int& lives);
   ~Ball();
 
-  bool isAttached;
   float radius() const;
   ALLEGRO_COLOR color() const;
 

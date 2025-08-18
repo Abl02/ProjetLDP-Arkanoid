@@ -51,7 +51,7 @@ int Controller::handleInput() {
         keyState[RIGHT] = true; break;
       case ALLEGRO_KEY_SPACE:
         if (LOG_LEVEL>=3)std::cerr<<"|Controller::handleInput() -> KEY_SPACE_DOWN:ACTION\n";
-        sm->launchBall(); break;
+        lvl->launchBall(); break;
       case ALLEGRO_KEY_RIGHT:
         if (LOG_LEVEL>=3)std::cerr<<"|Controller::handleInput() -> KEY_RIGHT_DOWN:NEXT\n";
         loadLevel(1, true); break;
@@ -85,9 +85,9 @@ int Controller::handleInput() {
   return ret;
 }
 void Controller::handleMouse() { // Handles mouse movement to control the paddle
-  if (env.MOUSE_STATE.x>(int)lvl->paddle->x() + LIMIT) {
+  if (env.MOUSE_STATE.x > (int)lvl->getPaddle().x() + LIMIT) {
     sm->movePaddleRight();
-  } else if (env.MOUSE_STATE.x<(int)lvl->paddle->x() - LIMIT) {
+  }else if (env.MOUSE_STATE.x < (int)lvl->getPaddle().x() - LIMIT) {
     sm->movePaddleLeft();
   }
 }

@@ -33,7 +33,7 @@ std::vector<Entity*> Level::all() const {
   return allEntities;
 }
 
-std::vector<CollisionGroup> Level::getColisionMasks() const {
+std::vector<CollisionGroup> Level::getCollisionMasks() const {
   std::vector<CollisionGroup> collisionMasks;
   CollisionGroup ballGroup;
   ballGroup.group.push_back(ball.get());
@@ -92,6 +92,12 @@ void Level::update(float deltaTime) {
       ++it;
     }
   }
+  if (ball) {
+      ball->move();
+  }
+  /*for (auto& b : extraBalls) {
+      if (b) b->move();
+  }*/
 }
 
 void Level::applyBonus(Bonus* bonus) {
@@ -150,10 +156,86 @@ void Level::applyBonus(Bonus* bonus) {
       break;
   }
 }
+
+void Level::addActiveBonus(Bonus* bonus) {
+    activeBonuses.push_back(bonus);
+}
+
+
+Paddle& Level::getPaddle() {
+  return *paddle;
+}
+
+
 int Level::getScore() const { return _score; }
 int& Level::getScoreRef() { return _score; }
 int Level::getLives() const { return _lives; }
 int& Level::getLivesRef() { return _lives; }
+
+void Level::movePaddleLeft() {
+    if (paddle) paddle->move(false);
+}
+
+void Level::movePaddleRight() {
+    if (paddle) paddle->move(true);
+}
+
+/*void Level::launchBall() { // original
+    if (ball) ball->go();
+}*/
+
+void Level::launchBall() {
+  if (LOG) std::cerr << "|Level::launchBall() called\n";
+  if (ball && ball->isBallAttached()) {
+    ball->release();
+  }
+}
+
+
+const BrickHolder& Level::getBricks() const {
+    return *bricks;
+}
+
+
+const Ball& Level::getBall() const {
+    return *ball;
+}
+
+bool Level::allBricksDestroyed() const {
+    for (const auto& brick : bricks->getContainer()) {
+        if (brick->isDestructable()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void Level::checkAllCollision() {
+    for (auto& mask : getCollisionMasks()) {
+        for (auto* entityG : mask.group) {
+            if (auto* ball = dynamic_cast<Ball*>(entityG)) {
+                for (auto* entityM : mask.masked) {
+                    if (auto* paddlePtr = dynamic_cast<Paddle*>(entityM)) {
+                        if (ball->checkCollision(paddlePtr)) {
+                            ball->collisionDetected(paddlePtr, ball->colPoint);
+                            paddlePtr->collisionDetected(ball, ball->colPoint);
+                        }
+                    }
+                    else if (auto* brick = dynamic_cast<Brick*>(entityM)) {
+                        if (ball->checkCollision(brick)) {
+                            ball->collisionDetected(brick, ball->colPoint);
+                            brick->collisionDetected(ball, ball->colPoint);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+const std::vector<Bonus*>& Level::getActiveBonuses() const {
+    return activeBonuses;
+}
 
 
 // -------------------------------------------------------------------------

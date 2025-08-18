@@ -16,9 +16,23 @@ struct CollisionGroup { // Represents a group of entities that can collide with 
 };
 
 class Level { // Represents a game level containing bricks, paddle, ball, and bonuses
+  friend class LevelLoader; // <--- Give LevelLoader access to private members
+
 private:
   int _lives;
   int _score;
+
+  // Here add all Game Entities
+  std::unique_ptr<BrickHolder> bricks;
+  std::unique_ptr<Paddle> paddle;
+  std::unique_ptr<Ball> ball;
+  std::vector<Bonus*> activeBonuses;
+  std::vector<std::unique_ptr<Ball>> extraBalls;
+  struct TimedBonus {
+    char type;
+    float remainingTime;
+};
+std::vector<TimedBonus> activeTimedBonuses;
 
 public:
   std::string levelName;
@@ -28,29 +42,33 @@ public:
   void loseLive();
   void update(float deltaTime);
   void applyBonus(Bonus* bonus);
+  void addActiveBonus(Bonus* bonus); // Adds a bonus to the active bonuses list
+  Paddle& getPaddle(); // allows modification to paddle
+  const Paddle& getPaddle() const; // read-only access to paddle
+
+  
 
   int getScore() const;
   int& getScoreRef();
   int getLives() const;
   int& getLivesRef();
 
-  // Here add all Game Entities
-  std::unique_ptr<BrickHolder> bricks;
-  std::unique_ptr<Paddle> paddle;
-  std::unique_ptr<Ball> ball;
-  std::vector<Bonus*> activeBonuses;
-  std::vector<std::unique_ptr<Ball>> extraBalls;
-  struct TimedBonus {
-  char type;
-  float remainingTime;
-};
+  // Public interface to control game entities
+  void movePaddleLeft();
+  void movePaddleRight();
+  void launchBall();
 
-std::vector<TimedBonus> activeTimedBonuses;
-  
+  // Access to read-only entity 
+  const BrickHolder& getBricks() const;
+  const Ball& getBall() const;
+  bool allBricksDestroyed() const;
+  void checkAllCollision();
 
-  // Also add them to the return vector of all()
   std::vector<Entity*> all() const;
-  std::vector<CollisionGroup> getColisionMasks() const;
+  std::vector<CollisionGroup> getCollisionMasks() const;
+  // Access to active bonuses (read-only)
+const std::vector<Bonus*>& getActiveBonuses() const;
+
 };
 
 class LevelLoader { // Loads levels from files and provides level data

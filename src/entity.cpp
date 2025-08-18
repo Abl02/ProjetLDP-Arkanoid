@@ -13,6 +13,8 @@
 #include "env.hpp"
 #include "level.hpp"
 
+ALLEGRO_COLOR bonusToColor(char letter);
+
 // -------------------------------------------------------------------------
 // Entity
 // -------------------------------------------------------------------------
@@ -170,29 +172,28 @@ Brick::~Brick() {
 }
 
 void Brick::destroy() {
-  if (_lives!=-1) {
-    _scoreRef+=(int)_type; // Update the score if brick is not undestructable
-  }
-  // --- BONUS SPAWN ---
-  if (_bonus != BRICK_CONST::none && _holder != nullptr) {
-    // Récupère la lettre du bonus
-    char bonusChar = bonusToChar(_bonus);
+    if (_lives != -1) {
+        _scoreRef += static_cast<int>(_type); // Update the score if brick is not indestructible
+    }
 
-    // Crée un nouveau bonus à la position de la brique
-    Bonus* newBonus = new Bonus(_pos.x, _pos.y, bonusChar, COLORS::WHITE);
-    newBonus->activate(); // le fait tomber
+    // --- BONUS SPAWN ---
+    if (_bonus != BRICK_CONST::none && _holder != nullptr) {
+        // Récupère la lettre du bonus
+        char bonusChar = bonusToChar(_bonus);
 
-    // Accède au niveau via le BrickHolder et ajoute le bonus
-    if (_holder) {
-    _holder->getLevel()->activeBonuses.push_back(newBonus);
-}
-  }
+        // Crée un nouveau bonus à la position de la brique
+        Bonus* newBonus = new Bonus(_pos.x, _pos.y, bonusChar, bonusToColor(bonusChar));
+        newBonus->activate(); // le fait tomber
 
-  if (_holder != nullptr) {
-    _holder->removeBrick(this);
-  } else {
-    delete this;
-  }
+        _holder->getLevel()->addActiveBonus(newBonus);
+    }
+
+    // --- REMOVE BRICK ---
+    if (_holder != nullptr) {
+        _holder->removeBrick(this);
+    } else {
+        delete this;
+    }
 }
 
 float Brick::width() const { return _w; }
@@ -232,6 +233,9 @@ BrickHolder::~BrickHolder() {
   brickContainer.clear(); 
 }
 
+Level* BrickHolder::getLevel() const {
+    return _level;
+}
 void BrickHolder::addBrick(BRICK_CONST::Param b) {
   if (b.row >= maxRow || b.col >= maxCol) {
     throw std::out_of_range("Brick position out of grid bounds");
@@ -358,7 +362,7 @@ void Ball::setDirection(float dx, float dy) {
 float Ball::radius() const { return _rad; }
 ALLEGRO_COLOR Ball::color() const { return _col; }
 
-void Ball::go() { _dx = 0.1f; _dy = -1; isAttached=false; }
+void Ball::go() { _dx = 0.1f; _dy = -1; isAttached=false; _attachedPaddle = nullptr; }
 void Ball::setPos(float x) { _pos.x = x; }
 void Ball::move() {
   if (isAttached && _attachedPaddle) {

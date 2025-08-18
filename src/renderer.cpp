@@ -23,7 +23,7 @@ void Renderer::refresh() {
     for (Entity* entity : lvl->all()) {
       render(entity);
     }
-    for (Bonus* bonus : lvl->activeBonuses) {
+    for (Bonus* bonus : lvl->getActiveBonuses()) {
       if (bonus != nullptr && bonus->isActive()) {
         bonus->render();
       }
